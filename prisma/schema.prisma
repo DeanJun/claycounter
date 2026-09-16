@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// SQLite has no native enum support, so these are documented string unions
+// enforced at the application layer:
+// ShotResult: "hit" | "miss"
+// Role: "admin" | "member"
+// SquadStatus: "in_progress" | "completed"
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String // 해시 저장
+  createdAt DateTime @default(now())
+
+  memberships   ClubMembership[]
+  rounds        Round[]          @relation("ShooterRounds")
+  enteredRounds Round[]          @relation("EnteredByRounds")
+}
+
+model Club {
+  id         String   @id @default(cuid())
+  name       String
+  location   String?
+  isPersonal Boolean  @default(false) // 개인 사용자용 가상 club 여부
+  createdAt  DateTime @default(now())
+
+  memberships ClubMembership[]
+  squads      Squad[]
+  rounds      Round[]
+}
+
+model ClubMembership {
+  id     String @id @default(cuid())
+  userId String
+  clubId String
+  role   String // "admin" | "member"
+
+  user User @relation(fields: [userId], references: [id])
+  club Club @relation(fields: [clubId], references: [id])
+
+  @@unique([userId, clubId])
+}
+
+model Squad {
+  id          String   @id @default(cuid())
+  clubId      String?
+  date        DateTime
+  location    String?
+  enteredById String // 기록관(admin)
+  status      String   @default("in_progress") // "in_progress" | "completed"
+  createdAt   DateTime @default(now())
+
+  club  Club?       @relation(fields: [clubId], references: [id])
+  slots SquadSlot[]
+}
+
+model SquadSlot {
+  id      String @id @default(cuid())
+  squadId String
+  order   Int // 1~6, 사수 순번
+
+  squad   Squad  @relation(fields: [squadId], references: [id])
+  round   Round  @relation(fields: [roundId], references: [id])
+  roundId String @unique
+
+  @@unique([squadId, order])
+}
+
+model Round {
+  id          String   @id @default(cuid())
+  shooterId   String
+  clubId      String? // null = 개인 기록
+  date        DateTime
+  location    String?
+  enteredById String // 실제 입력한 admin (감사 추적)
+  createdAt   DateTime @default(now())
+
+  shooter   User      @relation("ShooterRounds", fields: [shooterId], references: [id])
+  enteredBy User      @relation("EnteredByRounds", fields: [enteredById], references: [id])
+  club      Club?     @relation(fields: [clubId], references: [id])
+  slot      SquadSlot?
+  targets   Target[]
+}
+
+model Target {
+  id           String  @id @default(cuid())
+  roundId      String
+  targetNumber Int // 1~25
+  station      Int // ceil(targetNumber / 5), 1~5
+  firstResult  String // "hit" | "miss"
+  secondResult String? // firstResult가 miss일 때만 값 존재: "hit" | "miss"
+
+  round Round @relation(fields: [roundId], references: [id])
+
+  @@unique([roundId, targetNumber])
+}
