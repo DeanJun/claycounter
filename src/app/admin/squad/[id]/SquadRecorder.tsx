@@ -119,20 +119,34 @@ export function SquadRecorder({ squadId }: { squadId: string }) {
           <div className="text-xl font-semibold">
             {data.position.phase === "first" ? "초격" : "재격"}
           </div>
-          <div className="flex gap-4 justify-center">
+          <div className="grid grid-cols-2 gap-3">
             <button
               onClick={() => onTap("hit")}
-              disabled={busy}
-              className="bg-green-600 text-white rounded-lg px-8 py-4 text-xl font-bold disabled:opacity-50"
+              disabled={busy || data.position.phase !== "first"}
+              className="bg-green-600 text-white rounded-lg px-6 py-4 text-lg font-bold disabled:opacity-30"
             >
-              {data.position.phase === "first" ? "초격명중" : "재격명중"}
+              초격명중
             </button>
             <button
               onClick={() => onTap("miss")}
-              disabled={busy}
-              className="bg-red-600 text-white rounded-lg px-8 py-4 text-xl font-bold disabled:opacity-50"
+              disabled={busy || data.position.phase !== "first"}
+              className="bg-red-600 text-white rounded-lg px-6 py-4 text-lg font-bold disabled:opacity-30"
             >
-              {data.position.phase === "first" ? "초격미스" : "재격미스"}
+              초격미스
+            </button>
+            <button
+              onClick={() => onTap("hit")}
+              disabled={busy || data.position.phase !== "second"}
+              className="bg-green-700 text-white rounded-lg px-6 py-4 text-lg font-bold disabled:opacity-30"
+            >
+              재격명중
+            </button>
+            <button
+              onClick={() => onTap("miss")}
+              disabled={busy || data.position.phase !== "second"}
+              className="bg-red-700 text-white rounded-lg px-6 py-4 text-lg font-bold disabled:opacity-30"
+            >
+              재격미스
             </button>
           </div>
         </div>
