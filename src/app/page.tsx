@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -12,6 +13,8 @@ export default async function Home() {
   });
 
   if (!user) redirect("/login");
+
+  const isAdmin = user.memberships.some((m) => m.role === "admin");
 
   return (
     <main className="min-h-screen p-8 max-w-2xl mx-auto space-y-6">
@@ -29,8 +32,14 @@ export default async function Home() {
         </ul>
       </section>
 
+      {isAdmin && (
+        <Link href="/admin" className="inline-block underline text-sm">
+          관리자 페이지로 이동
+        </Link>
+      )}
+
       <p className="text-sm text-neutral-500">
-        대시보드/Squad 기록 화면은 다음 단계에서 구현합니다.
+        개인 대시보드(추이/히트맵)는 다음 단계에서 구현합니다.
       </p>
     </main>
   );

@@ -19,3 +19,12 @@ export async function requireClubAdmin(userId: string, clubId: string) {
     throw new Error("FORBIDDEN");
   }
 }
+
+/** 사용자가 admin 권한을 가진 club 중 하나를 반환 (단일 클럽 운영 전제, 첫 번째 것 사용). */
+export async function getAdminClubId(userId: string): Promise<string | null> {
+  const membership = await prisma.clubMembership.findFirst({
+    where: { userId, role: "admin" },
+    select: { clubId: true },
+  });
+  return membership?.clubId ?? null;
+}

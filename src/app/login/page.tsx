@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [mode, setMode] = useState<"login" | "register">("login");
   const [name, setName] = useState("");
   const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -16,7 +15,7 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
     try {
-      const res = await fetch(`/api/auth/${mode === "login" ? "login" : "register"}`, {
+      const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, pin }),
@@ -36,9 +35,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-neutral-50">
       <form onSubmit={onSubmit} className="w-full max-w-sm bg-white p-6 rounded-lg shadow space-y-4">
-        <h1 className="text-xl font-semibold">
-          {mode === "login" ? "로그인" : "회원가입"}
-        </h1>
+        <h1 className="text-xl font-semibold">로그인</h1>
 
         <input
           className="w-full border rounded px-3 py-2"
@@ -67,15 +64,7 @@ export default function LoginPage() {
           disabled={loading}
           className="w-full bg-neutral-900 text-white rounded px-3 py-2 disabled:opacity-50"
         >
-          {loading ? "처리 중..." : mode === "login" ? "로그인" : "회원가입"}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setMode(mode === "login" ? "register" : "login")}
-          className="w-full text-sm text-neutral-600 underline"
-        >
-          {mode === "login" ? "계정이 없으신가요? 회원가입" : "이미 계정이 있으신가요? 로그인"}
+          {loading ? "처리 중..." : "로그인"}
         </button>
       </form>
     </div>
