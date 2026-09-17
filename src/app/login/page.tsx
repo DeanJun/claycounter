@@ -7,8 +7,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -20,7 +19,7 @@ export default function LoginPage() {
       const res = await fetch(`/api/auth/${mode === "login" ? "login" : "register"}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(mode === "login" ? { email, password } : { name, email, password }),
+        body: JSON.stringify({ name, pin }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -41,30 +40,23 @@ export default function LoginPage() {
           {mode === "login" ? "로그인" : "회원가입"}
         </h1>
 
-        {mode === "register" && (
-          <input
-            className="w-full border rounded px-3 py-2"
-            placeholder="이름"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-        )}
         <input
           className="w-full border rounded px-3 py-2"
-          type="email"
-          placeholder="이메일"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          placeholder="이름"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           required
         />
         <input
-          className="w-full border rounded px-3 py-2"
+          className="w-full border rounded px-3 py-2 tracking-widest"
           type="password"
-          placeholder="비밀번호 (8자 이상)"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          minLength={8}
+          inputMode="numeric"
+          pattern="\d{4}"
+          placeholder="PIN (숫자 4자리)"
+          value={pin}
+          onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
+          minLength={4}
+          maxLength={4}
           required
         />
 

@@ -5,26 +5,25 @@ import { hashPassword, signSession, setSessionCookie } from "@/lib/auth";
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const name = typeof body?.name === "string" ? body.name.trim() : "";
-  const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
-  const password = typeof body?.password === "string" ? body.password : "";
+  const pin = typeof body?.pin === "string" ? body.pin : "";
 
-  if (!name || !email || password.length < 8) {
+  if (!name || !/^\d{4}$/.test(pin)) {
     return NextResponse.json(
-      { error: "name, email, password(8자 이상)가 필요합니다." },
+      { error: "이름과 4자리 숫자 PIN이 필요합니다." },
       { status: 400 }
     );
   }
 
-  const existing = await prisma.user.findUnique({ where: { email } });
+  const existing = await prisma.user.findUnique({ where: { name } });
   if (existing) {
-    return NextResponse.json({ error: "이미 가입된 이메일입니다." }, { status: 409 });
+    return NextResponse.json({ error: "이미 사용 중인 이름입니다." }, { status: 409 });
   }
 
-  const passwordHash = await hashPassword(password);
+  const pinHash = await hashPassword(pin);
 
   const user = await prisma.$transaction(async (tx) => {
     const created = await tx.user.create({
-      data: { name, email, password: passwordHash },
+      data: { name, pin: pinHash },
     });
 
     const personalClub = await tx.club.create({
@@ -41,5 +40,5 @@ export async function POST(req: NextRequest) {
   const token = signSession({ userId: user.id });
   await setSessionCookie(token);
 
-  return NextResponse.json({ id: user.id, name: user.name, email: user.email });
+  return NextResponse.json({ id: user.id, name: user.name });
 }

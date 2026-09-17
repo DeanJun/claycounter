@@ -15,9 +15,8 @@ datasource db {
 
 model User {
   id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  password  String // 해시 저장
+  name      String   @unique
+  pin       String // 4자리 PIN, 해시 저장
   createdAt DateTime @default(now())
 
   memberships   ClubMembership[]
