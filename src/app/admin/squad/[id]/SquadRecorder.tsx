@@ -125,14 +125,14 @@ export function SquadRecorder({ squadId }: { squadId: string }) {
               disabled={busy}
               className="bg-green-600 text-white rounded-lg px-8 py-4 text-xl font-bold disabled:opacity-50"
             >
-              명중
+              {data.position.phase === "first" ? "초격명중" : "재격명중"}
             </button>
             <button
               onClick={() => onTap("miss")}
               disabled={busy}
               className="bg-red-600 text-white rounded-lg px-8 py-4 text-xl font-bold disabled:opacity-50"
             >
-              미스
+              {data.position.phase === "first" ? "초격미스" : "재격미스"}
             </button>
           </div>
         </div>
