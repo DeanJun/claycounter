@@ -17,6 +17,9 @@ export default async function Home() {
 
   const isAdmin = user.memberships.some((m) => m.role === "admin");
 
+  // 일반 유저는 경기에 참여만 하므로 버튼 없이 바로 본인 기록 화면으로.
+  if (!isAdmin) redirect("/me");
+
   return (
     <main className="min-h-full px-4 py-6 max-w-md mx-auto space-y-8">
       <div className="flex items-center justify-between">
@@ -25,35 +28,24 @@ export default async function Home() {
       </div>
 
       <div className="space-y-2">
-        {isAdmin ? (
-          <>
-            <Link
-              href="/admin/squad/new"
-              className="block bg-white border border-neutral-200 rounded-xl p-4 text-base font-medium"
-            >
-              경기 시작
-            </Link>
-            <Link
-              href="/admin/members"
-              className="block bg-white border border-neutral-200 rounded-xl p-4 text-base font-medium"
-            >
-              회원 추가/제거
-            </Link>
-            <Link
-              href="/admin/squads"
-              className="block bg-white border border-neutral-200 rounded-xl p-4 text-base font-medium"
-            >
-              최근 기록
-            </Link>
-          </>
-        ) : (
-          <Link
-            href="/me"
-            className="block bg-white border border-neutral-200 rounded-xl p-4 text-base font-medium"
-          >
-            내 기록
-          </Link>
-        )}
+        <Link
+          href="/admin/squad/new"
+          className="block bg-white border border-neutral-200 rounded-xl p-4 text-base font-medium"
+        >
+          경기 시작
+        </Link>
+        <Link
+          href="/admin/members"
+          className="block bg-white border border-neutral-200 rounded-xl p-4 text-base font-medium"
+        >
+          회원 추가/제거
+        </Link>
+        <Link
+          href="/admin/squads"
+          className="block bg-white border border-neutral-200 rounded-xl p-4 text-base font-medium"
+        >
+          최근 기록
+        </Link>
       </div>
     </main>
   );
