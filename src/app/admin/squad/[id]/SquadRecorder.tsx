@@ -109,60 +109,14 @@ export function SquadRecorder({ squadId }: { squadId: string }) {
     : null;
 
   return (
-    <div className="space-y-6">
-      {data.position && currentSlot ? (
-        <div className="text-center space-y-4 bg-white rounded-lg shadow p-6">
-          <div className="text-lg text-neutral-500">
-            타겟 {data.position.targetNumber} / 25
-          </div>
-          <div className="text-3xl font-bold">{currentSlot.shooterName}</div>
-          <div className="text-xl font-semibold">
-            {data.position.phase === "first" ? "초격" : "재격"}
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={() => onTap("hit")}
-              disabled={busy || data.position.phase !== "first"}
-              className="bg-green-600 text-white rounded-lg px-6 py-4 text-lg font-bold disabled:opacity-30"
-            >
-              초격명중
-            </button>
-            <button
-              onClick={() => onTap("miss")}
-              disabled={busy || data.position.phase !== "first"}
-              className="bg-red-600 text-white rounded-lg px-6 py-4 text-lg font-bold disabled:opacity-30"
-            >
-              초격미스
-            </button>
-            <button
-              onClick={() => onTap("hit")}
-              disabled={busy || data.position.phase !== "second"}
-              className="bg-green-700 text-white rounded-lg px-6 py-4 text-lg font-bold disabled:opacity-30"
-            >
-              재격명중
-            </button>
-            <button
-              onClick={() => onTap("miss")}
-              disabled={busy || data.position.phase !== "second"}
-              className="bg-red-700 text-white rounded-lg px-6 py-4 text-lg font-bold disabled:opacity-30"
-            >
-              재격미스
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div className="text-center bg-white rounded-lg shadow p-6">
-          <p className="text-2xl font-bold">기록 완료</p>
-        </div>
-      )}
-
-      <div className="overflow-x-auto">
+    <div className="flex flex-col min-h-screen">
+      <div className="flex-1 overflow-x-auto pb-4">
         <table className="text-xs border-collapse w-full">
           <thead>
             <tr>
               <th className="text-left p-1 sticky left-0 bg-neutral-50">사수</th>
               {Array.from({ length: 25 }, (_, i) => i + 1).map((n) => (
-                <th key={n} className="p-1 w-6 text-center">
+                <th key={n} className="p-1 w-7 text-center">
                   {n}
                 </th>
               ))}
@@ -183,7 +137,7 @@ export function SquadRecorder({ squadId }: { squadId: string }) {
                   return (
                     <td key={n} className="p-0.5">
                       <div
-                        className={`w-6 h-6 flex items-center justify-center rounded ${
+                        className={`w-7 h-7 flex items-center justify-center rounded ${
                           cell === "hit"
                             ? "bg-green-500"
                             : cell === "miss"
@@ -202,6 +156,54 @@ export function SquadRecorder({ squadId }: { squadId: string }) {
           </tbody>
         </table>
       </div>
+
+      {data.position && currentSlot ? (
+        <div className="sticky bottom-0 bg-white border-t shadow-[0_-2px_8px_rgba(0,0,0,0.06)] p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] space-y-3">
+          <div className="flex items-center justify-center gap-3 text-center">
+            <span className="text-2xl font-bold">{currentSlot.shooterName}</span>
+            <span className="text-base text-neutral-500">
+              타겟 {data.position.targetNumber}/25
+            </span>
+            <span className="text-base font-semibold">
+              {data.position.phase === "first" ? "초격" : "재격"}
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => onTap("hit")}
+              disabled={busy || data.position.phase !== "first"}
+              className="bg-green-600 text-white rounded-lg py-5 text-lg font-bold disabled:opacity-30 active:scale-95 transition-transform"
+            >
+              초격명중
+            </button>
+            <button
+              onClick={() => onTap("miss")}
+              disabled={busy || data.position.phase !== "first"}
+              className="bg-red-600 text-white rounded-lg py-5 text-lg font-bold disabled:opacity-30 active:scale-95 transition-transform"
+            >
+              초격미스
+            </button>
+            <button
+              onClick={() => onTap("hit")}
+              disabled={busy || data.position.phase !== "second"}
+              className="bg-green-700 text-white rounded-lg py-5 text-lg font-bold disabled:opacity-30 active:scale-95 transition-transform"
+            >
+              재격명중
+            </button>
+            <button
+              onClick={() => onTap("miss")}
+              disabled={busy || data.position.phase !== "second"}
+              className="bg-red-700 text-white rounded-lg py-5 text-lg font-bold disabled:opacity-30 active:scale-95 transition-transform"
+            >
+              재격미스
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="sticky bottom-0 bg-white border-t p-6 text-center">
+          <p className="text-2xl font-bold">기록 완료</p>
+        </div>
+      )}
     </div>
   );
 }

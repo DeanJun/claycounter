@@ -16,7 +16,7 @@ export default async function SquadPage({
   if (!clubId) redirect("/");
 
   return (
-    <main className="min-h-screen p-4 max-w-4xl mx-auto space-y-6">
+    <main className="min-h-screen max-w-4xl mx-auto px-2 pt-3">
       <SquadRecorder squadId={id} />
     </main>
   );
