@@ -5,6 +5,7 @@ import { computeRoundStats, type RoundStats } from "@/lib/scoring";
 import { DISCIPLINE_LABELS, type Discipline } from "@/lib/discipline";
 import { TopBar } from "@/components/TopBar";
 import { LogoutButton } from "@/components/LogoutButton";
+import { PinChangeForm } from "./PinChangeForm";
 
 function formatDateTime(date: Date) {
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -83,6 +84,10 @@ export default async function MyRecordsPage() {
   return (
     <main className="min-h-full px-4 pb-8 max-w-2xl mx-auto">
       <TopBar title="내 기록" showBack={false} showHome={false} right={<LogoutButton />} />
+
+      <div className="mb-4">
+        <PinChangeForm />
+      </div>
 
       {rounds.length === 0 ? (
         <p className="text-sm text-neutral-400 mt-4">아직 기록이 없습니다.</p>

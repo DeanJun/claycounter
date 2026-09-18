@@ -11,6 +11,7 @@ export function MembersManager() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [removingId, setRemovingId] = useState<string | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
 
   async function load() {
     const res = await fetch("/api/admin/members");
@@ -63,6 +64,48 @@ export function MembersManager() {
     }
   }
 
+  async function onRename(m: Member) {
+    const newName = window.prompt("새 이름을 입력하세요", m.name);
+    if (!newName || newName.trim() === m.name) return;
+    setBusyId(m.id);
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/members/${m.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newName.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "오류가 발생했습니다.");
+        return;
+      }
+      await load();
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function onResetPin(m: Member) {
+    if (!window.confirm(`${m.name}님의 PIN을 0000으로 초기화할까요?`)) return;
+    setBusyId(m.id);
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/members/${m.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resetPin: true }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "오류가 발생했습니다.");
+        return;
+      }
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   return (
     <div className="space-y-4">
       <form
@@ -99,19 +142,35 @@ export function MembersManager() {
 
       <div className="bg-white rounded-xl border border-neutral-200 divide-y divide-neutral-100 max-h-96 overflow-y-auto">
         {members.map((m) => (
-          <div key={m.id} className="px-4 py-2.5 text-sm flex items-center justify-between">
-            <span>{m.name}</span>
-            {m.role === "admin" ? (
-              <span className="text-xs text-neutral-400">관리자</span>
-            ) : (
+          <div key={m.id} className="px-4 py-2.5 text-sm flex items-center justify-between gap-2">
+            <span className="flex-1 min-w-0 truncate">
+              {m.name} {m.role === "admin" && <span className="text-xs text-neutral-400">(관리자)</span>}
+            </span>
+            <div className="flex items-center gap-3 shrink-0">
               <button
-                onClick={() => onRemove(m.id)}
-                disabled={removingId === m.id}
-                className="text-xs text-red-600 disabled:opacity-50"
+                onClick={() => onRename(m)}
+                disabled={busyId === m.id}
+                className="text-xs text-neutral-500 disabled:opacity-50"
               >
-                {removingId === m.id ? "제거 중..." : "제거"}
+                이름 수정
               </button>
-            )}
+              <button
+                onClick={() => onResetPin(m)}
+                disabled={busyId === m.id}
+                className="text-xs text-neutral-500 disabled:opacity-50"
+              >
+                PIN 초기화
+              </button>
+              {m.role !== "admin" && (
+                <button
+                  onClick={() => onRemove(m.id)}
+                  disabled={removingId === m.id}
+                  className="text-xs text-red-600 disabled:opacity-50"
+                >
+                  {removingId === m.id ? "제거 중..." : "제거"}
+                </button>
+              )}
+            </div>
           </div>
         ))}
         {members.length === 0 && (
