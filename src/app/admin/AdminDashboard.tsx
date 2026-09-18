@@ -71,28 +71,11 @@ export function AdminDashboard() {
         href="/admin/squad/new"
         className="block text-center bg-neutral-900 text-white rounded-lg py-4 text-base font-semibold"
       >
-        + 기록 시작
+        + 경기 시작
       </Link>
 
       <section className="space-y-3">
-        <h2 className="text-sm font-semibold text-neutral-500">회원 리스트</h2>
-        <div className="bg-white rounded-xl border border-neutral-200 divide-y divide-neutral-100">
-          {members.map((m) => (
-            <div key={m.id} className="px-4 py-2.5 text-sm flex items-center justify-between">
-              <span>{m.name}</span>
-              {m.role === "admin" && (
-                <span className="text-xs text-neutral-400">관리자</span>
-              )}
-            </div>
-          ))}
-          {members.length === 0 && (
-            <p className="px-4 py-3 text-sm text-neutral-400">회원이 없습니다.</p>
-          )}
-        </div>
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold text-neutral-500">회원가입 (관리자가 등록)</h2>
+        <h2 className="text-sm font-semibold text-neutral-500">회원 추가</h2>
         <form
           onSubmit={onAddMember}
           className="bg-white rounded-xl border border-neutral-200 p-4 flex flex-wrap gap-2 items-start"
@@ -124,6 +107,20 @@ export function AdminDashboard() {
           </button>
         </form>
         {error && <p className="text-red-600 text-sm">{error}</p>}
+
+        <div className="bg-white rounded-xl border border-neutral-200 divide-y divide-neutral-100">
+          {members.map((m) => (
+            <div key={m.id} className="px-4 py-2.5 text-sm flex items-center justify-between">
+              <span>{m.name}</span>
+              {m.role === "admin" && (
+                <span className="text-xs text-neutral-400">관리자</span>
+              )}
+            </div>
+          ))}
+          {members.length === 0 && (
+            <p className="px-4 py-3 text-sm text-neutral-400">회원이 없습니다.</p>
+          )}
+        </div>
       </section>
 
       <section className="space-y-3">

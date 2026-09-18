@@ -25,18 +25,19 @@ export default async function Home() {
       </div>
 
       <div className="space-y-2">
-        <Link
-          href="/me"
-          className="block bg-white border border-neutral-200 rounded-xl p-4 text-base font-medium"
-        >
-          내 기록
-        </Link>
-        {isAdmin && (
+        {isAdmin ? (
           <Link
             href="/admin"
             className="block bg-white border border-neutral-200 rounded-xl p-4 text-base font-medium"
           >
             관리자
+          </Link>
+        ) : (
+          <Link
+            href="/me"
+            className="block bg-white border border-neutral-200 rounded-xl p-4 text-base font-medium"
+          >
+            내 기록
           </Link>
         )}
       </div>
