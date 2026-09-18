@@ -2,9 +2,9 @@ import { redirect } from "next/navigation";
 import { getCurrentUserId } from "@/lib/auth";
 import { getAdminClubId } from "@/lib/authz";
 import { TopBar } from "@/components/TopBar";
-import { AdminDashboard } from "./AdminDashboard";
+import { SquadHistory } from "./SquadHistory";
 
-export default async function AdminPage() {
+export default async function SquadsHistoryPage() {
   const userId = await getCurrentUserId();
   if (!userId) redirect("/login");
 
@@ -12,9 +12,9 @@ export default async function AdminPage() {
   if (!clubId) redirect("/");
 
   return (
-    <main className="min-h-screen px-4 pb-8 max-w-2xl mx-auto">
-      <TopBar title="관리자" />
-      <AdminDashboard />
+    <main className="min-h-screen px-4 pb-8 max-w-lg mx-auto">
+      <TopBar title="최근 기록" />
+      <SquadHistory />
     </main>
   );
 }

@@ -14,17 +14,18 @@ export async function GET() {
   const memberships = await prisma.clubMembership.findMany({
     where: { clubId },
     include: { user: { select: { id: true, name: true, createdAt: true } } },
-    orderBy: { user: { createdAt: "asc" } },
   });
 
-  return NextResponse.json(
-    memberships.map((m) => ({
+  const members = memberships
+    .map((m) => ({
       id: m.user.id,
       name: m.user.name,
       role: m.role,
       createdAt: m.user.createdAt,
     }))
-  );
+    .sort((a, b) => a.name.localeCompare(b.name, "ko"));
+
+  return NextResponse.json(members);
 }
 
 export async function POST(req: NextRequest) {

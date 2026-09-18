@@ -15,7 +15,9 @@ export function NewSquadForm() {
   useEffect(() => {
     fetch("/api/admin/members")
       .then((res) => (res.ok ? res.json() : []))
-      .then(setMembers);
+      .then((data: Member[]) =>
+        setMembers([...data].sort((a, b) => a.name.localeCompare(b.name, "ko")))
+      );
   }, []);
 
   function toggleSelected(id: string) {
@@ -71,7 +73,7 @@ export function NewSquadForm() {
         <h2 className="text-sm font-semibold text-neutral-500">
           사수 선택 ({selected.length}/6, 클릭한 순서대로 기록)
         </h2>
-        <div className="bg-white rounded-xl border border-neutral-200 divide-y divide-neutral-100">
+        <div className="bg-white rounded-xl border border-neutral-200 divide-y divide-neutral-100 max-h-80 overflow-y-auto">
           {members.map((m) => {
             const idx = selected.indexOf(m.id);
             const isSelected = idx !== -1;
