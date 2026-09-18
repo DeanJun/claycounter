@@ -22,7 +22,7 @@ export default async function SquadPage({
   const title = squad ? DISCIPLINE_LABELS[squad.discipline as Discipline] ?? "기록" : "기록";
 
   return (
-    <main className="min-h-screen max-w-4xl mx-auto px-2">
+    <main className="min-h-full max-w-4xl mx-auto px-2">
       <TopBar title={title} />
       <SquadRecorder squadId={id} />
     </main>

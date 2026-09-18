@@ -12,7 +12,7 @@ export default async function SquadsHistoryPage() {
   if (!clubId) redirect("/");
 
   return (
-    <main className="min-h-screen px-4 pb-8 max-w-lg mx-auto">
+    <main className="min-h-full px-4 pb-8 max-w-lg mx-auto">
       <TopBar title="최근 기록" />
       <SquadHistory />
     </main>

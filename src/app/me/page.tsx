@@ -80,7 +80,7 @@ export default async function MyRecordsPage() {
   };
 
   return (
-    <main className="min-h-screen px-4 pb-8 max-w-2xl mx-auto">
+    <main className="min-h-full px-4 pb-8 max-w-2xl mx-auto">
       <TopBar title="내 기록" />
 
       {rounds.length === 0 ? (

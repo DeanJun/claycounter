@@ -120,7 +120,7 @@ export function SquadRecorder({ squadId }: { squadId: string }) {
   const activeSlot = correction ? correctionSlot : currentSlot;
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-full">
       <div className="flex-1 overflow-x-auto pb-4">
         <table className="text-xs border-collapse w-full">
           <thead>

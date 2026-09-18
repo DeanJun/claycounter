@@ -18,7 +18,7 @@ export default async function Home() {
   const isAdmin = user.memberships.some((m) => m.role === "admin");
 
   return (
-    <main className="min-h-screen px-4 py-6 max-w-md mx-auto space-y-8">
+    <main className="min-h-full px-4 py-6 max-w-md mx-auto space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">{user.name}님</h1>
         <LogoutButton />

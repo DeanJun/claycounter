@@ -12,7 +12,7 @@ export default async function MembersPage() {
   if (!clubId) redirect("/");
 
   return (
-    <main className="min-h-screen px-4 pb-8 max-w-lg mx-auto">
+    <main className="min-h-full px-4 pb-8 max-w-lg mx-auto">
       <TopBar title="회원 추가/제거" />
       <MembersManager />
     </main>
