@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { DISCIPLINES, DISCIPLINE_LABELS, type Discipline } from "@/lib/discipline";
 
 type Target = {
   targetNumber: number;
@@ -21,6 +22,7 @@ type Position = { targetNumber: number; slotOrder: number; phase: "first" | "sec
 type SquadData = {
   id: string;
   status: string;
+  discipline: Discipline;
   slots: Slot[];
   position: Position;
 };
@@ -43,6 +45,8 @@ export function SquadRecorder({ squadId }: { squadId: string }) {
   const [busy, setBusy] = useState(false);
   // 스코어보드에서 이미 기록된 칸을 눌러 정정할 때 사용.
   const [correction, setCorrection] = useState<ActiveTarget | null>(null);
+  const [editingDiscipline, setEditingDiscipline] = useState(false);
+  const [savingDiscipline, setSavingDiscipline] = useState(false);
 
   async function load() {
     const res = await fetch(`/api/admin/squads/${squadId}`);
@@ -101,6 +105,23 @@ export function SquadRecorder({ squadId }: { squadId: string }) {
     }
   }
 
+  async function onChangeDiscipline(discipline: Discipline) {
+    setSavingDiscipline(true);
+    try {
+      const res = await fetch(`/api/admin/squads/${squadId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ discipline }),
+      });
+      if (res.ok) {
+        setData((prev) => (prev ? { ...prev, discipline } : prev));
+        setEditingDiscipline(false);
+      }
+    } finally {
+      setSavingDiscipline(false);
+    }
+  }
+
   if (!data) return <p className="text-sm text-neutral-500">불러오는 중...</p>;
 
   const currentSlot = data.position
@@ -121,6 +142,43 @@ export function SquadRecorder({ squadId }: { squadId: string }) {
 
   return (
     <div className="flex flex-col min-h-full">
+      <div className="px-1 pb-2">
+        {editingDiscipline ? (
+          <div className="flex gap-2">
+            {DISCIPLINES.map((d) => (
+              <button
+                key={d}
+                type="button"
+                disabled={savingDiscipline}
+                onClick={() => onChangeDiscipline(d)}
+                className={`px-3 py-1.5 rounded text-xs font-medium border disabled:opacity-50 ${
+                  data.discipline === d
+                    ? "bg-neutral-900 text-white border-neutral-900"
+                    : "bg-white text-neutral-700 border-neutral-300"
+                }`}
+              >
+                {DISCIPLINE_LABELS[d]}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => setEditingDiscipline(false)}
+              className="text-xs text-neutral-400 px-2"
+            >
+              닫기
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setEditingDiscipline(true)}
+            className="text-xs text-neutral-500 border border-neutral-300 rounded px-3 py-1.5"
+          >
+            종목: {DISCIPLINE_LABELS[data.discipline]} (탭하여 변경)
+          </button>
+        )}
+      </div>
+
       <div className="flex-1 overflow-x-auto pb-4">
         <table className="text-xs border-collapse w-full">
           <thead>
