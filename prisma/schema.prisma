@@ -12,6 +12,7 @@ datasource db {
 // ShotResult: "hit" | "miss"
 // Role: "admin" | "member"
 // SquadStatus: "in_progress" | "completed"
+// Discipline: "trap" | "american_random" | "american_00" (트랩 | 아메랜덤 | 아메0도)
 
 model User {
   id        String   @id @default(cuid())
@@ -53,6 +54,7 @@ model Squad {
   clubId      String?
   date        DateTime
   location    String?
+  discipline  String   @default("trap") // "trap" | "american_random" | "american_00"
   enteredById String // 기록관(admin)
   status      String   @default("in_progress") // "in_progress" | "completed"
   createdAt   DateTime @default(now())
@@ -79,6 +81,7 @@ model Round {
   clubId      String? // null = 개인 기록
   date        DateTime
   location    String?
+  discipline  String   @default("trap") // "trap" | "american_random" | "american_00"
   enteredById String // 실제 입력한 admin (감사 추적)
   createdAt   DateTime @default(now())
 

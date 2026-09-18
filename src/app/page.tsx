@@ -32,15 +32,16 @@ export default async function Home() {
         </ul>
       </section>
 
-      {isAdmin && (
-        <Link href="/admin" className="inline-block underline text-sm">
-          관리자 페이지로 이동
+      <div className="flex gap-4">
+        <Link href="/me" className="inline-block underline text-sm">
+          내 기록 보기
         </Link>
-      )}
-
-      <p className="text-sm text-neutral-500">
-        개인 대시보드(추이/히트맵)는 다음 단계에서 구현합니다.
-      </p>
+        {isAdmin && (
+          <Link href="/admin" className="inline-block underline text-sm">
+            관리자 페이지로 이동
+          </Link>
+        )}
+      </div>
     </main>
   );
 }

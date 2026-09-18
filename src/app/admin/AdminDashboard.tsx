@@ -2,9 +2,24 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { DISCIPLINES, DISCIPLINE_LABELS, type Discipline } from "@/lib/discipline";
 
 type Member = { id: string; name: string; role: string; createdAt: string };
-type SquadSummary = { id: string; date: string; status: string; shooters: string[] };
+type SquadSummary = {
+  id: string;
+  date: string;
+  status: string;
+  discipline: Discipline;
+  shooters: string[];
+};
+
+function formatDateTime(iso: string) {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}년 ${pad(d.getMonth() + 1)}월 ${pad(d.getDate())}일 ${pad(
+    d.getHours()
+  )}시 ${pad(d.getMinutes())}분`;
+}
 
 export function AdminDashboard() {
   const [members, setMembers] = useState<Member[]>([]);
@@ -14,6 +29,7 @@ export function AdminDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
+  const [discipline, setDiscipline] = useState<Discipline>("trap");
   const [starting, setStarting] = useState(false);
 
   async function load() {
@@ -65,7 +81,7 @@ export function AdminDashboard() {
       const res = await fetch("/api/admin/squads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ memberIds: selected }),
+        body: JSON.stringify({ memberIds: selected, discipline }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -81,7 +97,26 @@ export function AdminDashboard() {
   return (
     <div className="space-y-10">
       <section className="space-y-3">
-        <h2 className="font-semibold">기록 시작 — 사수 선택 (1~6명, 순서대로 클릭)</h2>
+        <h2 className="font-semibold">기록 시작</h2>
+
+        <div className="flex gap-2">
+          {DISCIPLINES.map((d) => (
+            <button
+              key={d}
+              type="button"
+              onClick={() => setDiscipline(d)}
+              className={`px-3 py-1.5 rounded text-sm border ${
+                discipline === d
+                  ? "bg-neutral-900 text-white border-neutral-900"
+                  : "bg-white text-neutral-700 border-neutral-300"
+              }`}
+            >
+              {DISCIPLINE_LABELS[d]}
+            </button>
+          ))}
+        </div>
+
+        <p className="text-sm text-neutral-600">사수 선택 (1~6명, 순서대로 클릭)</p>
         <ul className="space-y-1">
           {members.map((m) => {
             const idx = selected.indexOf(m.id);
@@ -161,8 +196,8 @@ export function AdminDashboard() {
           {squads.map((s) => (
             <li key={s.id}>
               <Link href={`/admin/squad/${s.id}`} className="underline">
-                {new Date(s.date).toLocaleString()} — {s.shooters.join(", ")} (
-                {s.status === "completed" ? "완료" : "진행중"})
+                {formatDateTime(s.date)} {DISCIPLINE_LABELS[s.discipline]} — {s.shooters.join(", ")}{" "}
+                ({s.status === "completed" ? "완료" : "진행중"})
               </Link>
             </li>
           ))}
