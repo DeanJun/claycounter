@@ -25,6 +25,8 @@ type SquadData = {
   position: Position;
 };
 
+type ActiveTarget = { roundId: string; slotOrder: number; targetNumber: number };
+
 function finalCell(target: Target | undefined): "hit" | "miss" | "pending" | "empty" {
   if (!target) return "empty";
   if (target.firstResult === "hit") return "hit";
@@ -39,6 +41,8 @@ function hitCount(slot: Slot): number {
 export function SquadRecorder({ squadId }: { squadId: string }) {
   const [data, setData] = useState<SquadData | null>(null);
   const [busy, setBusy] = useState(false);
+  // 스코어보드에서 "재격 대기(노랑)" 칸을 눌러 나중에 재격 결과를 채워 넣을 때 사용.
+  const [correction, setCorrection] = useState<ActiveTarget | null>(null);
 
   async function load() {
     const res = await fetch(`/api/admin/squads/${squadId}`);
@@ -50,9 +54,9 @@ export function SquadRecorder({ squadId }: { squadId: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [squadId]);
 
-  async function onTap(phase: "first" | "second", result: "hit" | "miss") {
-    if (!data || !data.position || busy) return;
-    const { targetNumber, slotOrder } = data.position;
+  async function onTap(target: ActiveTarget, phase: "first" | "second", result: "hit" | "miss") {
+    if (!data || busy) return;
+    const { roundId, slotOrder, targetNumber } = target;
     const slot = data.slots.find((s) => s.order === slotOrder);
     if (!slot) return;
 
@@ -63,13 +67,7 @@ export function SquadRecorder({ squadId }: { squadId: string }) {
     if (phase === "first") {
       nextTargets.push({ targetNumber, firstResult: result, secondResult: null });
     } else {
-      const existing = slot.targets.find((t) => t.targetNumber === targetNumber);
-      nextTargets.push({
-        targetNumber,
-        firstResult: "miss",
-        secondResult: result,
-      });
-      void existing;
+      nextTargets.push({ targetNumber, firstResult: "miss", secondResult: result });
     }
     const optimisticSlots = data.slots.map((s) =>
       s.order === slotOrder ? { ...s, targets: nextTargets } : s
@@ -80,7 +78,7 @@ export function SquadRecorder({ squadId }: { squadId: string }) {
       const res = await fetch(`/api/admin/squads/${squadId}/shot`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ roundId: slot.roundId, targetNumber, phase, result }),
+        body: JSON.stringify({ roundId, targetNumber, phase, result }),
       });
       const respData = await res.json();
       if (res.ok) {
@@ -94,6 +92,7 @@ export function SquadRecorder({ squadId }: { squadId: string }) {
               }
             : prev
         );
+        setCorrection(null);
       } else {
         await load();
       }
@@ -107,6 +106,18 @@ export function SquadRecorder({ squadId }: { squadId: string }) {
   const currentSlot = data.position
     ? data.slots.find((s) => s.order === data.position!.slotOrder)
     : null;
+
+  const correctionSlot = correction
+    ? data.slots.find((s) => s.order === correction.slotOrder)
+    : null;
+
+  // correction 모드면 그 칸을, 아니면 현재 진행 위치를 대상으로 버튼 동작.
+  const active: ActiveTarget | null = correction
+    ? correction
+    : data.position && currentSlot
+    ? { roundId: currentSlot.roundId, slotOrder: data.position.slotOrder, targetNumber: data.position.targetNumber }
+    : null;
+  const activeSlot = correction ? correctionSlot : currentSlot;
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -131,12 +142,17 @@ export function SquadRecorder({ squadId }: { squadId: string }) {
                 </td>
                 {Array.from({ length: 25 }, (_, i) => i + 1).map((n) => {
                   const cell = finalCell(slot.targets.find((t) => t.targetNumber === n));
-                  const isCurrent =
-                    data.position?.slotOrder === slot.order &&
-                    data.position?.targetNumber === n;
+                  const isCurrent = active?.slotOrder === slot.order && active?.targetNumber === n;
+                  const clickable = cell === "pending";
                   return (
                     <td key={n} className="p-0.5">
-                      <div
+                      <button
+                        type="button"
+                        disabled={!clickable}
+                        onClick={() =>
+                          clickable &&
+                          setCorrection({ roundId: slot.roundId, slotOrder: slot.order, targetNumber: n })
+                        }
                         className={`w-7 h-7 flex items-center justify-center rounded ${
                           cell === "hit"
                             ? "bg-green-500"
@@ -157,47 +173,53 @@ export function SquadRecorder({ squadId }: { squadId: string }) {
         </table>
       </div>
 
-      {data.position && currentSlot ? (
+      {active && activeSlot ? (
         <div className="sticky bottom-0 bg-white border-t shadow-[0_-2px_8px_rgba(0,0,0,0.06)] p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] space-y-3">
           <div className="flex items-center justify-center gap-3 text-center">
-            <span className="text-2xl font-bold">{currentSlot.shooterName}</span>
-            <span className="text-base text-neutral-500">
-              타겟 {data.position.targetNumber}/25
-            </span>
-            <span className="text-base font-semibold">
-              {data.position.phase === "first" ? "초격" : "재격"}
-            </span>
+            <span className="text-2xl font-bold">{activeSlot.shooterName}</span>
+            <span className="text-base text-neutral-500">타겟 {active.targetNumber}/25</span>
+            {correction && (
+              <span className="text-base font-semibold text-amber-600">재격 정정</span>
+            )}
           </div>
           <div className="grid grid-cols-2 gap-2">
             <button
-              onClick={() => onTap("first", "hit")}
-              disabled={busy}
+              onClick={() => onTap(active, "first", "hit")}
+              disabled={busy || !!correction}
               className="bg-green-600 text-white rounded-lg py-5 text-lg font-bold disabled:opacity-30 active:scale-95 transition-transform"
             >
               초격명중
             </button>
             <button
-              onClick={() => onTap("first", "miss")}
-              disabled={busy}
+              onClick={() => onTap(active, "first", "miss")}
+              disabled={busy || !!correction}
               className="bg-red-600 text-white rounded-lg py-5 text-lg font-bold disabled:opacity-30 active:scale-95 transition-transform"
             >
               초격미스
             </button>
             <button
-              onClick={() => onTap("second", "hit")}
+              onClick={() => onTap(active, "second", "hit")}
               disabled={busy}
               className="bg-green-700 text-white rounded-lg py-5 text-lg font-bold disabled:opacity-30 active:scale-95 transition-transform"
             >
               재격명중
             </button>
             <button
-              onClick={() => onTap("second", "miss")}
+              onClick={() => onTap(active, "second", "miss")}
               disabled={busy}
               className="bg-red-700 text-white rounded-lg py-5 text-lg font-bold disabled:opacity-30 active:scale-95 transition-transform"
             >
               재격미스
             </button>
           </div>
+          {correction && (
+            <button
+              onClick={() => setCorrection(null)}
+              className="w-full text-sm text-neutral-500 underline"
+            >
+              취소하고 원래 진행으로 돌아가기
+            </button>
+          )}
         </div>
       ) : (
         <div className="sticky bottom-0 bg-white border-t p-6 text-center">
