@@ -61,13 +61,18 @@ export async function POST(
       update: { firstResult: result, secondResult: null },
     });
   } else {
+    // 재격 버튼은 초격 결과와 무관하게 바로 누를 수 있음 — 초격은 miss였던 것으로 간주.
     const existing = slot.round.targets.find((t) => t.targetNumber === targetNumber);
-    if (!existing || existing.firstResult !== "miss") {
-      return NextResponse.json({ error: "재격 대상이 아닙니다." }, { status: 400 });
+    if (existing?.firstResult === "hit") {
+      return NextResponse.json(
+        { error: "이미 초격 명중으로 기록되어 재격을 기록할 수 없습니다." },
+        { status: 400 }
+      );
     }
-    await prisma.target.update({
+    await prisma.target.upsert({
       where: { roundId_targetNumber: { roundId, targetNumber } },
-      data: { secondResult: result },
+      create: { roundId, targetNumber, station, firstResult: "miss", secondResult: result },
+      update: { firstResult: "miss", secondResult: result },
     });
   }
 

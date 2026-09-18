@@ -50,9 +50,9 @@ export function SquadRecorder({ squadId }: { squadId: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [squadId]);
 
-  async function onTap(result: "hit" | "miss") {
+  async function onTap(phase: "first" | "second", result: "hit" | "miss") {
     if (!data || !data.position || busy) return;
-    const { targetNumber, slotOrder, phase } = data.position;
+    const { targetNumber, slotOrder } = data.position;
     const slot = data.slots.find((s) => s.order === slotOrder);
     if (!slot) return;
 
@@ -170,29 +170,29 @@ export function SquadRecorder({ squadId }: { squadId: string }) {
           </div>
           <div className="grid grid-cols-2 gap-2">
             <button
-              onClick={() => onTap("hit")}
-              disabled={busy || data.position.phase !== "first"}
+              onClick={() => onTap("first", "hit")}
+              disabled={busy}
               className="bg-green-600 text-white rounded-lg py-5 text-lg font-bold disabled:opacity-30 active:scale-95 transition-transform"
             >
               초격명중
             </button>
             <button
-              onClick={() => onTap("miss")}
-              disabled={busy || data.position.phase !== "first"}
+              onClick={() => onTap("first", "miss")}
+              disabled={busy}
               className="bg-red-600 text-white rounded-lg py-5 text-lg font-bold disabled:opacity-30 active:scale-95 transition-transform"
             >
               초격미스
             </button>
             <button
-              onClick={() => onTap("hit")}
-              disabled={busy || data.position.phase !== "second"}
+              onClick={() => onTap("second", "hit")}
+              disabled={busy}
               className="bg-green-700 text-white rounded-lg py-5 text-lg font-bold disabled:opacity-30 active:scale-95 transition-transform"
             >
               재격명중
             </button>
             <button
-              onClick={() => onTap("miss")}
-              disabled={busy || data.position.phase !== "second"}
+              onClick={() => onTap("second", "miss")}
+              disabled={busy}
               className="bg-red-700 text-white rounded-lg py-5 text-lg font-bold disabled:opacity-30 active:scale-95 transition-transform"
             >
               재격미스
