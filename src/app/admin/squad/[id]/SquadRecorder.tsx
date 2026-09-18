@@ -27,11 +27,11 @@ type SquadData = {
 
 type ActiveTarget = { roundId: string; slotOrder: number; targetNumber: number };
 
-function finalCell(target: Target | undefined): "hit" | "miss" | "pending" | "empty" {
+function finalCell(target: Target | undefined): "hit" | "miss" | "empty" {
   if (!target) return "empty";
   if (target.firstResult === "hit") return "hit";
-  if (target.secondResult === null) return "pending";
-  return target.secondResult;
+  // 재격 결과가 아직 없으면 일단 미스로 표시 (나중에 칸을 눌러 정정 가능)
+  return target.secondResult ?? "miss";
 }
 
 function hitCount(slot: Slot): number {
@@ -41,7 +41,7 @@ function hitCount(slot: Slot): number {
 export function SquadRecorder({ squadId }: { squadId: string }) {
   const [data, setData] = useState<SquadData | null>(null);
   const [busy, setBusy] = useState(false);
-  // 스코어보드에서 "재격 대기(노랑)" 칸을 눌러 나중에 재격 결과를 채워 넣을 때 사용.
+  // 스코어보드에서 이미 기록된 칸을 눌러 정정할 때 사용.
   const [correction, setCorrection] = useState<ActiveTarget | null>(null);
 
   async function load() {
@@ -143,7 +143,7 @@ export function SquadRecorder({ squadId }: { squadId: string }) {
                 {Array.from({ length: 25 }, (_, i) => i + 1).map((n) => {
                   const cell = finalCell(slot.targets.find((t) => t.targetNumber === n));
                   const isCurrent = active?.slotOrder === slot.order && active?.targetNumber === n;
-                  const clickable = cell === "pending";
+                  const clickable = cell !== "empty";
                   return (
                     <td key={n} className="p-0.5">
                       <button
@@ -158,8 +158,6 @@ export function SquadRecorder({ squadId }: { squadId: string }) {
                             ? "bg-green-500"
                             : cell === "miss"
                             ? "bg-red-500"
-                            : cell === "pending"
-                            ? "bg-yellow-300"
                             : "bg-neutral-100"
                         } ${isCurrent ? "ring-2 ring-blue-500" : ""}`}
                       />
@@ -179,20 +177,20 @@ export function SquadRecorder({ squadId }: { squadId: string }) {
             <span className="text-2xl font-bold">{activeSlot.shooterName}</span>
             <span className="text-base text-neutral-500">타겟 {active.targetNumber}/25</span>
             {correction && (
-              <span className="text-base font-semibold text-amber-600">재격 정정</span>
+              <span className="text-base font-semibold text-amber-600">정정 모드</span>
             )}
           </div>
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => onTap(active, "first", "hit")}
-              disabled={busy || !!correction}
+              disabled={busy}
               className="bg-green-600 text-white rounded-lg py-5 text-lg font-bold disabled:opacity-30 active:scale-95 transition-transform"
             >
               초격명중
             </button>
             <button
               onClick={() => onTap(active, "first", "miss")}
-              disabled={busy || !!correction}
+              disabled={busy}
               className="bg-red-600 text-white rounded-lg py-5 text-lg font-bold disabled:opacity-30 active:scale-95 transition-transform"
             >
               초격미스
