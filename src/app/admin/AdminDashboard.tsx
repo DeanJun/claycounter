@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { DISCIPLINES, DISCIPLINE_LABELS, type Discipline } from "@/lib/discipline";
+import { DISCIPLINE_LABELS, type Discipline } from "@/lib/discipline";
 
 type Member = { id: string; name: string; role: string; createdAt: string };
 type SquadSummary = {
@@ -28,9 +28,6 @@ export function AdminDashboard() {
   const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [selected, setSelected] = useState<string[]>([]);
-  const [discipline, setDiscipline] = useState<Discipline>("trap");
-  const [starting, setStarting] = useState(false);
 
   async function load() {
     const [membersRes, squadsRes] = await Promise.all([
@@ -68,108 +65,47 @@ export function AdminDashboard() {
     }
   }
 
-  function toggleSelected(id: string) {
-    setSelected((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : prev.length < 6 ? [...prev, id] : prev
-    );
-  }
-
-  async function onStartSquad() {
-    if (selected.length === 0) return;
-    setStarting(true);
-    try {
-      const res = await fetch("/api/admin/squads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ memberIds: selected, discipline }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? "오류가 발생했습니다.");
-        return;
-      }
-      window.location.href = `/admin/squad/${data.id}`;
-    } finally {
-      setStarting(false);
-    }
-  }
-
   return (
-    <div className="space-y-10">
-      <section className="space-y-3">
-        <h2 className="font-semibold">기록 시작</h2>
-
-        <div className="flex gap-2">
-          {DISCIPLINES.map((d) => (
-            <button
-              key={d}
-              type="button"
-              onClick={() => setDiscipline(d)}
-              className={`px-3 py-1.5 rounded text-sm border ${
-                discipline === d
-                  ? "bg-neutral-900 text-white border-neutral-900"
-                  : "bg-white text-neutral-700 border-neutral-300"
-              }`}
-            >
-              {DISCIPLINE_LABELS[d]}
-            </button>
-          ))}
-        </div>
-
-        <p className="text-sm text-neutral-600">사수 선택 (1~6명, 순서대로 클릭)</p>
-        <ul className="space-y-1">
-          {members.map((m) => {
-            const idx = selected.indexOf(m.id);
-            return (
-              <li key={m.id}>
-                <label className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={idx !== -1}
-                    onChange={() => toggleSelected(m.id)}
-                  />
-                  {m.name}
-                  {idx !== -1 && (
-                    <span className="text-xs text-neutral-500">순번 {idx + 1}</span>
-                  )}
-                </label>
-              </li>
-            );
-          })}
-        </ul>
-        <button
-          onClick={onStartSquad}
-          disabled={selected.length === 0 || starting}
-          className="bg-neutral-900 text-white rounded px-4 py-2 text-sm disabled:opacity-50"
-        >
-          {starting ? "생성 중..." : `기록 시작 (${selected.length}명)`}
-        </button>
-      </section>
+    <div className="space-y-8">
+      <Link
+        href="/admin/squad/new"
+        className="block text-center bg-neutral-900 text-white rounded-lg py-4 text-base font-semibold"
+      >
+        + 기록 시작
+      </Link>
 
       <section className="space-y-3">
-        <h2 className="font-semibold">회원 리스트</h2>
-        <ul className="space-y-1 text-sm">
+        <h2 className="text-sm font-semibold text-neutral-500">회원 리스트</h2>
+        <div className="bg-white rounded-xl border border-neutral-200 divide-y divide-neutral-100">
           {members.map((m) => (
-            <li key={m.id}>
-              {m.name} {m.role === "admin" ? "(관리자)" : ""}
-            </li>
+            <div key={m.id} className="px-4 py-2.5 text-sm flex items-center justify-between">
+              <span>{m.name}</span>
+              {m.role === "admin" && (
+                <span className="text-xs text-neutral-400">관리자</span>
+              )}
+            </div>
           ))}
-          {members.length === 0 && <li className="text-neutral-500">회원이 없습니다.</li>}
-        </ul>
+          {members.length === 0 && (
+            <p className="px-4 py-3 text-sm text-neutral-400">회원이 없습니다.</p>
+          )}
+        </div>
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-semibold">회원가입 (관리자가 등록)</h2>
-        <form onSubmit={onAddMember} className="flex flex-wrap gap-2 items-start">
+        <h2 className="text-sm font-semibold text-neutral-500">회원가입 (관리자가 등록)</h2>
+        <form
+          onSubmit={onAddMember}
+          className="bg-white rounded-xl border border-neutral-200 p-4 flex flex-wrap gap-2 items-start"
+        >
           <input
-            className="border rounded px-3 py-2 text-sm"
+            className="border border-neutral-300 rounded-lg px-3 py-2 text-sm flex-1 min-w-[8rem]"
             placeholder="이름"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
           />
           <input
-            className="border rounded px-3 py-2 text-sm tracking-widest"
+            className="border border-neutral-300 rounded-lg px-3 py-2 text-sm tracking-widest w-32"
             type="password"
             inputMode="numeric"
             placeholder="PIN 4자리"
@@ -182,27 +118,42 @@ export function AdminDashboard() {
           <button
             type="submit"
             disabled={loading}
-            className="bg-neutral-900 text-white rounded px-4 py-2 text-sm disabled:opacity-50"
+            className="bg-neutral-900 text-white rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-50"
           >
-            {loading ? "등록 중..." : "회원 등록"}
+            {loading ? "등록 중..." : "등록"}
           </button>
         </form>
         {error && <p className="text-red-600 text-sm">{error}</p>}
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-semibold">최근 기록</h2>
-        <ul className="space-y-1 text-sm">
+        <h2 className="text-sm font-semibold text-neutral-500">최근 기록</h2>
+        <div className="bg-white rounded-xl border border-neutral-200 divide-y divide-neutral-100">
           {squads.map((s) => (
-            <li key={s.id}>
-              <Link href={`/admin/squad/${s.id}`} className="underline">
-                {formatDateTime(s.date)} {DISCIPLINE_LABELS[s.discipline]} — {s.shooters.join(", ")}{" "}
-                ({s.status === "completed" ? "완료" : "진행중"})
-              </Link>
-            </li>
+            <Link
+              key={s.id}
+              href={`/admin/squad/${s.id}`}
+              className="block px-4 py-3 text-sm hover:bg-neutral-50"
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-medium">{DISCIPLINE_LABELS[s.discipline]}</span>
+                <span
+                  className={`text-xs ${
+                    s.status === "completed" ? "text-neutral-400" : "text-green-600"
+                  }`}
+                >
+                  {s.status === "completed" ? "완료" : "진행중"}
+                </span>
+              </div>
+              <div className="text-neutral-500 text-xs mt-0.5">
+                {formatDateTime(s.date)} · {s.shooters.join(", ")}
+              </div>
+            </Link>
           ))}
-          {squads.length === 0 && <li className="text-neutral-500">기록이 없습니다.</li>}
-        </ul>
+          {squads.length === 0 && (
+            <p className="px-4 py-3 text-sm text-neutral-400">기록이 없습니다.</p>
+          )}
+        </div>
       </section>
     </div>
   );

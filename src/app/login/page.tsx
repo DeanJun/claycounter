@@ -33,19 +33,22 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-neutral-50">
-      <form onSubmit={onSubmit} className="w-full max-w-sm bg-white p-6 rounded-lg shadow space-y-4">
-        <h1 className="text-xl font-semibold">로그인</h1>
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <form
+        onSubmit={onSubmit}
+        className="w-full max-w-sm bg-white border border-neutral-200 p-6 rounded-xl space-y-4"
+      >
+        <h1 className="text-xl font-semibold text-center">클레이 기록</h1>
 
         <input
-          className="w-full border rounded px-3 py-2"
+          className="w-full border border-neutral-300 rounded-lg px-3 py-2.5"
           placeholder="이름"
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
         />
         <input
-          className="w-full border rounded px-3 py-2 tracking-widest"
+          className="w-full border border-neutral-300 rounded-lg px-3 py-2.5 tracking-widest"
           type="password"
           inputMode="numeric"
           pattern="\d{4}"
@@ -62,7 +65,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-neutral-900 text-white rounded px-3 py-2 disabled:opacity-50"
+          className="w-full bg-neutral-900 text-white rounded-lg py-2.5 font-medium disabled:opacity-50"
         >
           {loading ? "처리 중..." : "로그인"}
         </button>
